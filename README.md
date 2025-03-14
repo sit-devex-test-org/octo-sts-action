@@ -13,6 +13,8 @@ steps:
 - uses: octo-sts/action@main
   id: octo-sts
   with:
+    domain: octo-sts-domain
+    audience: dd-octo-sts
     scope: your-org/your-repo
     identity: foo
 
