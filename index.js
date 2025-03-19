@@ -18,14 +18,17 @@ if (!scope || !identity) {
 
 async function fetchWithRetry(url, options = {}, retries = 3, initialDelay = 1000) {
   let attempt = 1;
+  let lastError = null;
   while (retries > 0) {
     try {
       const response = await fetch(url, options);
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorBody = await response.text();
+        throw new Error(`HTTP error! status: ${response.status}; message: ${errorBody}`);
       }
       return response;
     } catch (error) {
+      lastError = error;
       console.warn(`Attempt ${attempt} failed. Error: ${error.message}`);
       const jitter = Math.floor(Math.random() * 5000);
       const delay = Math.min(2 ** attempt * initialDelay + jitter, 10000); // Limit max delay to 10 seconds
@@ -34,7 +37,7 @@ async function fetchWithRetry(url, options = {}, retries = 3, initialDelay = 100
       retries--;
     }
   }
-  throw new Error(`Fetch failed after ${attempt} attempts.`);
+  throw new Error(`Fetch failed after ${attempt} attempts. Last error: ${lastError.message}`);
 }
 
 (async function main() {
